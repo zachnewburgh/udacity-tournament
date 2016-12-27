@@ -17,7 +17,7 @@ def deleteMatches():
     c = conn.cursor()
     # c.execute("UPDATE players SET matches = 0;")
     # c.execute("UPDATE players SET wins = 0;")
-    c.execute("DELETE from matches")
+    c.execute("TRUNCATE matches CASCADE;")
     conn.commit()
     conn.close()
 
@@ -26,7 +26,7 @@ def deletePlayers():
     """Remove all of the player records from the database."""
     conn = connect()
     c = conn.cursor()
-    c.execute("DELETE FROM players")
+    c.execute("TRUNCATE players CASCADE;")
     conn.commit()
     conn.close()
 
