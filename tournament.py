@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
@@ -20,6 +20,7 @@ def deleteMatches():
     conn.commit()
     conn.close()
 
+
 def deletePlayers():
     """Remove all of the player records from the database."""
     conn = connect()
@@ -37,52 +38,87 @@ def countPlayers():
     result = c.fetchone()[0]
     return int(result)
 
+
 def registerPlayer(name):
     """Add a player to the tournament database."""
     name = name.replace('"', "'")
     conn = connect()
     c = conn.cursor()
-    c.execute("INSERT INTO players (name, wins, matches) VALUES (%s, %s, %s)", (name, 0, 0))
+    c.execute("INSERT INTO players (name, wins, matches)"
+              "VALUES (%s, %s, %s)", (name, 0, 0))
     conn.commit()
     conn.close()
 
 
-
 def playerStandings():
-    """Return a list of player ids, names, wins, and matches sorted by wins (highest to lowest)."""
+    """Return a list of player ids, names, wins,
+    and matches sorted by wins (highest to lowest)."""
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, name, wins, matches FROM players ORDER BY wins DESC;")
-    # c.execute("SELECT players.id, name, COUNT(matches.winner) as wins, COUNT(matches.winner) + COUNT(matches.loser) as matches FROM players, matches WHERE players.id = matches.winner OR players.id = matches.loser GROUP BY players.id ORDER BY wins DESC;")
-    # c.execute("SELECT players.id, name, COUNT(matches.winner) as wins, COUNT(matches.winner) + COUNT(matches.loser) as matches FROM players, matches GROUP BY players.id ORDER BY wins DESC;")
+    c.execute("SELECT id, name, wins, matches "
+              "FROM players ORDER BY wins DESC;")
+    """
+    c.execute("SELECT players.id, name,
+    COUNT(matches.winner) as wins,
+    COUNT(matches.winner) + COUNT(matches.loser) as matches
+    FROM players, matches
+    WHERE players.id = matches.winner
+    OR players.id = matches.loser
+    GROUP BY players.id
+    ORDER BY wins DESC;")
+    """
+
+    """
+    c.execute("SELECT players.id, name,
+    COUNT(matches.winner) as wins,
+    COUNT(matches.winner) + COUNT(matches.loser) as matches
+    FROM players, matches
+    GROUP BY players.id
+    ORDER BY wins DESC;")
+    """
+
     result = c.fetchall()
-    
+
     return result
+
 
 def reportMatch(winner, loser):
     """Record the outcome of a single match between two players."""
     conn = connect()
     c = conn.cursor()
-    c.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)", (winner, loser))
+    c.execute("INSERT INTO matches (winner, loser) "
+              "VALUES (%s, %s)", (winner, loser))
 
     # Update Winner's Matches
-    c.execute("SELECT players.matches FROM players WHERE players.id = %s", (winner,))
+    c.execute("SELECT players.matches "
+              "FROM players WHERE players.id = %s", (winner,))
     winner_matches = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players SET matches = %s WHERE id = %s", (winner_matches, winner))
+    c.execute("UPDATE players "
+              "SET matches = %s "
+              "WHERE id = %s", (winner_matches, winner))
 
     # Update Loser's Matches
-    c.execute("SELECT players.matches FROM players WHERE players.id = %s", (loser,))
+    c.execute("SELECT players.matches "
+              "FROM players "
+              "WHERE players.id = %s", (loser,))
     loser_matches = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players SET matches = %s WHERE id = %s", (loser_matches, loser))
+    c.execute("UPDATE players "
+              "SET matches = %s "
+              "WHERE id = %s", (loser_matches, loser))
 
     # Update Winner's Wins
-    c.execute("SELECT players.wins FROM players WHERE players.id = %s", (winner,))
+    c.execute("SELECT players.wins "
+              "FROM players "
+              "WHERE players.id = %s", (winner,))
     winner_wins = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players SET wins = %s WHERE id = %s", (winner_wins, winner))
+    c.execute("UPDATE players "
+              "SET wins = %s "
+              "WHERE id = %s", (winner_wins, winner))
 
     conn.commit()
     conn.close()
- 
+
+
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
 
@@ -119,12 +155,15 @@ def swissPairings():
         # Remove the second player's matches from the current list.
         del list_list[i][4]
 
-        # Delete the consecutive list from list_list since it was already joined to the previous list.
+        """
+        Delete the consecutive list from list_list
+        since it was already joined to the previous list."""
         del list_list[i+1]
 
         # Increment the index.
-        i  = i + 1
-        # Decrement j (list_list's original length) since an element has been removed.
+        i = i + 1
+        """Decrement j (list_list's original length)
+        since an element has been removed."""
         j = j - 1
 
     # Create a new list comprised of list_list's lists coverted into tuples.
@@ -133,5 +172,3 @@ def swissPairings():
         tuples_list.append(tuple(l))
 
     return tuples_list
-
-
