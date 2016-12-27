@@ -15,8 +15,9 @@ def deleteMatches():
     """Reset all matches and wins records to 0."""
     conn = connect()
     c = conn.cursor()
-    c.execute("UPDATE players SET matches = 0;")
-    c.execute("UPDATE players SET wins = 0;")
+    # c.execute("UPDATE players SET matches = 0;")
+    # c.execute("UPDATE players SET wins = 0;")
+    c.execute("DELETE from matches")
     conn.commit()
     conn.close()
 
