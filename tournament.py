@@ -77,7 +77,8 @@ def playerStandings():
     # Retrieve a list of registered players who haven't yet played.
     c.execute("SELECT players.id, name, 0 AS wins, 0 AS matches "
               "FROM players "
-              "WHERE NOT EXISTS (SELECT players.id, name "
+              "WHERE NOT EXISTS (SELECT players.id, "
+                                "name "
                                 "FROM players, matches "
                                 "WHERE players.id = matches.winner);")
     unplayed = c.fetchall()
@@ -87,7 +88,7 @@ def playerStandings():
     for winner in winners:
         result.append(winner)
     for loser in losers:
-        result.append(loser)        
+        result.append(loser)
     for player in unplayed:
         result.append(player)
 
