@@ -53,7 +53,10 @@ def playerStandings():
     conn = connect()
     c = conn.cursor()
     c.execute("SELECT id, name, wins, matches FROM players ORDER BY wins DESC;")
+    # c.execute("SELECT players.id, name, COUNT(matches.winner) as wins, COUNT(matches.winner) + COUNT(matches.loser) as matches FROM players, matches WHERE players.id = matches.winner OR players.id = matches.loser GROUP BY players.id ORDER BY wins DESC;")
+    # c.execute("SELECT players.id, name, COUNT(matches.winner) as wins, COUNT(matches.winner) + COUNT(matches.loser) as matches FROM players, matches GROUP BY players.id ORDER BY wins DESC;")
     result = c.fetchall()
+    
     return result
 
 def reportMatch(winner, loser):
