@@ -59,23 +59,35 @@ def playerStandings():
     #           "FROM players ORDER BY wins DESC;")
 
     c.execute("SELECT players.id, name, "
-              "COUNT(matches.winner) as wins, "
-              "COUNT(matches.winner) + COUNT(matches.loser) AS matches "
+              "COUNT(matches.winner) AS wins, "
+              "COUNT(matches.winner) AS matches "
               "FROM players, matches "
               "WHERE players.id = matches.winner "
-              "OR players.id = matches.loser "
               "GROUP BY players.id "
-              "ORDER BY wins DESC")
-    result = c.fetchall()
+              "ORDER BY wins DESC;")
+    winners = c.fetchall()
+
+    c.execute("SELECT players.id, name, "
+              "0 AS wins, "
+              "COUNT(matches.loser) AS matches "
+              "FROM players, matches "
+              "WHERE players.id = matches.loser "
+              "GROUP BY players.id;")
+    losers = c.fetchall()
 
     c.execute("SELECT players.id, name, 0 AS wins, 0 AS matches "
               "FROM players "
               "WHERE NOT EXISTS (SELECT players.id, name "
                                 "FROM players, matches "
                                 "WHERE players.id = matches.winner);")
-    unplayed_players = c.fetchall()
+    unplayed = c.fetchall()
 
-    for player in unplayed_players:
+    result = []
+    for winner in winners:
+        result.append(winner)
+    for loser in losers:
+        result.append(loser)        
+    for player in unplayed:
         result.append(player)
     """
     c.execute("SELECT players.id, name,
@@ -109,31 +121,31 @@ def reportMatch(winner, loser):
     c.execute("INSERT INTO matches (winner, loser) "
               "VALUES (%s, %s)", (winner, loser))
 
-    # Update Winner's Matches
-    c.execute("SELECT players.matches "
-              "FROM players WHERE players.id = %s", (winner,))
-    winner_matches = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players "
-              "SET matches = %s "
-              "WHERE id = %s", (winner_matches, winner))
+    # # Update Winner's Matches
+    # c.execute("SELECT players.matches "
+    #           "FROM players WHERE players.id = %s", (winner,))
+    # winner_matches = int(c.fetchone()[0]) + 1
+    # c.execute("UPDATE players "
+    #           "SET matches = %s "
+    #           "WHERE id = %s", (winner_matches, winner))
 
-    # Update Loser's Matches
-    c.execute("SELECT players.matches "
-              "FROM players "
-              "WHERE players.id = %s", (loser,))
-    loser_matches = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players "
-              "SET matches = %s "
-              "WHERE id = %s", (loser_matches, loser))
+    # # Update Loser's Matches
+    # c.execute("SELECT players.matches "
+    #           "FROM players "
+    #           "WHERE players.id = %s", (loser,))
+    # loser_matches = int(c.fetchone()[0]) + 1
+    # c.execute("UPDATE players "
+    #           "SET matches = %s "
+    #           "WHERE id = %s", (loser_matches, loser))
 
-    # Update Winner's Wins
-    c.execute("SELECT players.wins "
-              "FROM players "
-              "WHERE players.id = %s", (winner,))
-    winner_wins = int(c.fetchone()[0]) + 1
-    c.execute("UPDATE players "
-              "SET wins = %s "
-              "WHERE id = %s", (winner_wins, winner))
+    # # Update Winner's Wins
+    # c.execute("SELECT players.wins "
+    #           "FROM players "
+    #           "WHERE players.id = %s", (winner,))
+    # winner_wins = int(c.fetchone()[0]) + 1
+    # c.execute("UPDATE players "
+    #           "SET wins = %s "
+    #           "WHERE id = %s", (winner_wins, winner))
 
     conn.commit()
     conn.close()
