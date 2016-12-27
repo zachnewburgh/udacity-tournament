@@ -12,7 +12,7 @@ def connect():
 
 
 def deleteMatches():
-    """Reset all matches and wins records to 0."""
+    """Delete all entries in the matches table."""
     conn = connect()
     c = conn.cursor()
     c.execute("TRUNCATE matches CASCADE;")
@@ -21,7 +21,7 @@ def deleteMatches():
 
 
 def deletePlayers():
-    """Remove all of the player records from the database."""
+    """Delete all entries in the players table."""
     conn = connect()
     c = conn.cursor()
     c.execute("TRUNCATE players CASCADE;")
@@ -55,6 +55,7 @@ def playerStandings():
     conn = connect()
     c = conn.cursor()
 
+    # Retrieve a list of winners.
     c.execute("SELECT players.id, name, "
               "COUNT(matches.winner) AS wins, "
               "COUNT(matches.winner) AS matches "
@@ -64,6 +65,7 @@ def playerStandings():
               "ORDER BY wins DESC;")
     winners = c.fetchall()
 
+    # Retrieve of list of losers.
     c.execute("SELECT players.id, name, "
               "0 AS wins, "
               "COUNT(matches.loser) AS matches "
@@ -72,6 +74,7 @@ def playerStandings():
               "GROUP BY players.id;")
     losers = c.fetchall()
 
+    # Retrieve a list of registered players who haven't yet played.
     c.execute("SELECT players.id, name, 0 AS wins, 0 AS matches "
               "FROM players "
               "WHERE NOT EXISTS (SELECT players.id, name "
@@ -79,6 +82,7 @@ def playerStandings():
                                 "WHERE players.id = matches.winner);")
     unplayed = c.fetchall()
 
+    # Combine the winners, losers, and unplayed queries into a single list.
     result = []
     for winner in winners:
         result.append(winner)
@@ -96,7 +100,6 @@ def reportMatch(winner, loser):
     c = conn.cursor()
     c.execute("INSERT INTO matches (winner, loser) "
               "VALUES (%s, %s)", (winner, loser))
-
     conn.commit()
     conn.close()
 
