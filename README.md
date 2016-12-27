@@ -26,14 +26,20 @@ $ vagrant ssh
 vagrant@vagrant-ubuntu-trusty-32:~$ cd /vagrant/tournament
 ```
 
-6. Open psql, create the database, and import the SQL schema by typing the following in the command line:
+6. Open psql, create the database, connect to the database, import the SQL schema, and run the tests by typing the following in the command line:
 
 ```
 vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ psql
 
-tournament=> create database tournament
+vagrant=> create database tournament
+
+vagrant=> \c tournament
 
 tournament=> \i tournament.sql
+
+tournament=> \q
+
+vagrant@vagrant-ubuntu-trusty-32:/vagrant/tournament$ python tournament_test.py
 ```
 
 ## License
