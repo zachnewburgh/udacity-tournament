@@ -12,9 +12,7 @@ DROP TABLE IF EXISTS players;
 -- players table
 CREATE TABLE players (
   id serial PRIMARY KEY,
-  name text NOT NULL,
-  wins integer NOT NULL,
-  matches integer NOT NULL
+  name text NOT NULL
 );
 
 -- matches table
