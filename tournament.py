@@ -55,8 +55,28 @@ def playerStandings():
     and matches sorted by wins (highest to lowest)."""
     conn = connect()
     c = conn.cursor()
-    c.execute("SELECT id, name, wins, matches "
-              "FROM players ORDER BY wins DESC;")
+    # c.execute("SELECT id, name, wins, matches "
+    #           "FROM players ORDER BY wins DESC;")
+
+    c.execute("SELECT players.id, name, "
+              "COUNT(matches.winner) as wins, "
+              "COUNT(matches.winner) + COUNT(matches.loser) AS matches "
+              "FROM players, matches "
+              "WHERE players.id = matches.winner "
+              "OR players.id = matches.loser "
+              "GROUP BY players.id "
+              "ORDER BY wins DESC")
+    result = c.fetchall()
+
+    c.execute("SELECT players.id, name, 0 AS wins, 0 AS matches "
+              "FROM players "
+              "WHERE NOT EXISTS (SELECT players.id, name "
+                                "FROM players, matches "
+                                "WHERE players.id = matches.winner);")
+    unplayed_players = c.fetchall()
+
+    for player in unplayed_players:
+        result.append(player)
     """
     c.execute("SELECT players.id, name,
     COUNT(matches.winner) as wins,
@@ -77,7 +97,7 @@ def playerStandings():
     ORDER BY wins DESC;")
     """
 
-    result = c.fetchall()
+    # result = c.fetchall()
 
     return result
 
