@@ -12,7 +12,7 @@ def connect():
 
 
 def deleteMatches():
-    """Remove all the match records from the database."""
+    """Reset all matches and wins records to 0."""
     conn = connect()
     c = conn.cursor()
     c.execute("UPDATE players SET matches = 0;")
@@ -21,7 +21,7 @@ def deleteMatches():
     conn.close()
 
 def deletePlayers():
-    """Remove all the player records from the database."""
+    """Remove all of the player records from the database."""
     conn = connect()
     c = conn.cursor()
     c.execute("DELETE FROM players")
@@ -30,7 +30,7 @@ def deletePlayers():
 
 
 def countPlayers():
-    """Returns the number of players currently registered."""
+    """Return the number of players currently registered."""
     conn = connect()
     c = conn.cursor()
     c.execute("SELECT COUNT(*) AS total_players FROM players;")
@@ -38,14 +38,7 @@ def countPlayers():
     return int(result)
 
 def registerPlayer(name):
-    """Adds a player to the tournament database.
-  
-    The database assigns a unique serial id number for the player.  (This
-    should be handled by your SQL database schema, not in your Python code.)
-  
-    Args:
-      name: the player's full name (need not be unique).
-    """
+    """Add a player to the tournament database."""
     name = name.replace('"', "'")
     conn = connect()
     c = conn.cursor()
@@ -56,18 +49,7 @@ def registerPlayer(name):
 
 
 def playerStandings():
-    """Returns a list of the players and their win records, sorted by wins.
-
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
-
-    Returns:
-      A list of tuples, each of which contains (id, name, wins, matches):
-        id: the player's unique id (assigned by the database)
-        name: the player's full name (as registered)
-        wins: the number of matches the player has won
-        matches: the number of matches the player has played
-    """
+    """Return a list of player ids, names, wins, and matches sorted by wins (highest to lowest)."""
     conn = connect()
     c = conn.cursor()
     c.execute("SELECT id, name, wins, matches FROM players ORDER BY wins DESC;")
@@ -75,12 +57,7 @@ def playerStandings():
     return result
 
 def reportMatch(winner, loser):
-    """Records the outcome of a single match between two players.
-
-    Args:
-      winner:  the id number of the player who won
-      loser:  the id number of the player who lost
-    """
+    """Record the outcome of a single match between two players."""
     conn = connect()
     c = conn.cursor()
     c.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)", (winner, loser))
@@ -105,14 +82,9 @@ def reportMatch(winner, loser):
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
-  
-    Assuming that there are an even number of players registered, each player
-    appears exactly once in the pairings.  Each player is paired with another
-    player with an equal or nearly-equal win record, that is, a player adjacent
-    to him or her in the standings.
-  
+
     Returns:
-      A list of tuples, each of which contains (id1, name1, id2, name2)
+    A list of tuples, each of which contains (id1, name1, id2, name2)
         id1: the first player's unique id
         name1: the first player's name
         id2: the second player's unique id
@@ -121,26 +93,38 @@ def swissPairings():
     conn = connect()
     c = conn.cursor()
 
+    # Retrieve a list of player tuples sorted by most to least wins.
     pairs_list = playerStandings()
-    list_list = []
 
+    # Create a new list comprised of pairs_list's tuples coverted into lists.
+    list_list = []
     for pair in pairs_list:
         list_list.append(list(pair))
 
+    # Iterate over list_list to create pairs of consecutive lists.
     i = 0
-    j = len(pairs_list)
-
+    j = len(list_list)
     while (i < j):
+        # Join the current list with the consecutive list.
         list_list[i] = list_list[i] + list_list[i+1]
+        # Remove the first player's wins from the current list.
         del list_list[i][2]
+        # Remove the first player's matches from the current list.
         del list_list[i][2]
+        # Remove the second player's wins from the current list.
         del list_list[i][4]
+        # Remove the second player's matches from the current list.
         del list_list[i][4]
 
+        # Delete the consecutive list from list_list since it was already joined to the previous list.
         del list_list[i+1]
+
+        # Increment the index.
         i  = i + 1
+        # Decrement j (list_list's original length) since an element has been removed.
         j = j - 1
 
+    # Create a new list comprised of list_list's lists coverted into tuples.
     tuples_list = []
     for l in list_list:
         tuples_list.append(tuple(l))
